@@ -33,6 +33,7 @@ public class PlayerController : MonoBehaviour {
     }
 
     float NewY(float y) {
-        return transform.position.y + y * moveSpeed * Time.deltaTime;
+        return transform.position.y;
+        //return transform.position.y + y * moveSpeed * Time.deltaTime;
     }
 }
