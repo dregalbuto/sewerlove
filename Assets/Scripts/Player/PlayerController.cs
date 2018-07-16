@@ -4,19 +4,17 @@ using UnityEngine;
 
 public class PlayerController : MonoBehaviour
 {
-
     public float moveSpeed = 1f;
+    public bool allowYMovement = false;
     private Rigidbody2D body;
-    private SpriteRenderer spriteRenderer;
-    private bool facingLeft;
-
+    //private SpriteRenderer spriteRenderer;
+    [ShowOnly] public bool facingLeft = true;
 
     // Use this for initialization
     void Start()
     {
         body = GetComponent<Rigidbody2D>();
-        spriteRenderer = GetComponent<SpriteRenderer>();
-        facingLeft = true;
+        //spriteRenderer = GetComponent<SpriteRenderer>();
     }
 
     // Update is called once per physics tick
@@ -24,23 +22,37 @@ public class PlayerController : MonoBehaviour
     {
         float xInput = Input.GetAxisRaw("Horizontal");
         float yInput = Input.GetAxisRaw("Vertical");
+        UpdatePlayer(xInput, yInput);
+    }
 
+    void UpdatePlayer(float xInput, float yInput)
+    {
         if (IsMoving(xInput) || IsMoving(yInput))
         {
-            // var moveVector = new Vector3(xInput, yInput, 0);
-            if (xInput > 0 && facingLeft || xInput < 0 && !facingLeft) {
-                facingLeft = !facingLeft;
-                Vector3 scale = transform.localScale;
-                scale.x *= -1;
-                transform.localScale = scale;
-            }
-            body.MovePosition(new Vector2(NewX(xInput), NewY(yInput)));
+            flipPlayer(xInput);
+            MovePlayer(xInput, yInput);
         }
     }
 
     bool IsMoving(float x)
     {
-        return x - 0 < float.Epsilon;
+        return Mathf.Abs(x - 0) < float.Epsilon;
+    }
+
+    void flipPlayer(float xInput)
+    {
+        if (xInput > 0 && facingLeft || xInput < 0 && !facingLeft)
+        {
+            facingLeft = !facingLeft;
+            Vector3 scale = transform.localScale;
+            scale.x *= -1;
+            transform.localScale = scale;
+        }
+    }
+
+    void MovePlayer(float xInput, float yInput)
+    {
+        body.MovePosition(new Vector2(NewX(xInput), NewY(yInput)));
     }
 
     float NewX(float x)
@@ -50,8 +62,13 @@ public class PlayerController : MonoBehaviour
 
     float NewY(float y)
     {
-        return transform.position.y;
-        //return transform.position.y + y * moveSpeed * Time.deltaTime;
+        if (allowYMovement)
+        {
+            return transform.position.y + y * moveSpeed * Time.deltaTime;
+        }
+        else
+        {
+            return transform.position.y;
+        }
     }
-
 }
