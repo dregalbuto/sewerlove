@@ -6,15 +6,13 @@ public class PlayerController : MonoBehaviour
 {
     public float moveSpeed = 1f;
     public bool allowYMovement = false;
+    [ReadOnly] public bool facingLeft = true;
     private Rigidbody2D body;
-    //private SpriteRenderer spriteRenderer;
-    [ShowOnly] public bool facingLeft = true;
 
     // Use this for initialization
     void Start()
     {
         body = GetComponent<Rigidbody2D>();
-        //spriteRenderer = GetComponent<SpriteRenderer>();
     }
 
     // Update is called once per physics tick
@@ -29,7 +27,7 @@ public class PlayerController : MonoBehaviour
     {
         if (IsMoving(xInput) || IsMoving(yInput))
         {
-            flipPlayer(xInput);
+            FlipPlayer(xInput);
             MovePlayer(xInput, yInput);
         }
     }
@@ -39,7 +37,7 @@ public class PlayerController : MonoBehaviour
         return Mathf.Abs(x - 0) < float.Epsilon;
     }
 
-    void flipPlayer(float xInput)
+    void FlipPlayer(float xInput)
     {
         if (xInput > 0 && facingLeft || xInput < 0 && !facingLeft)
         {

@@ -7,7 +7,7 @@ public class UpdateUIPlaceholder : MonoBehaviour {
 
     public Text myText;
     public GameObject playerObject;
-    private PlayerController playerController;
+    private PlayerController playerController; // maybe give to parent?
 
 
 	// Use this for initialization
