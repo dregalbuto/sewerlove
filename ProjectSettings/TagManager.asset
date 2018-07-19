@@ -4,7 +4,10 @@
 TagManager:
   serializedVersion: 2
   tags:
-  - UI
+  - GothGF
+  - FG
+  - NPCParent
+  - DialogueUI
   layers:
   - Default
   - TransparentFX
@@ -17,7 +20,7 @@ TagManager:
   - Foreground
   - Background
   - Player
-  - 
+  - NonPlayerCharacter
   - 
   - 
   - 

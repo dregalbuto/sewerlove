@@ -4,9 +4,14 @@ using UnityEngine;
 
 public class GameController : MonoBehaviour {
 
-	// Use this for initialization
-	void Start () {
-		
+    private void Awake()
+    {
+       
+    }
+
+    // Use this for initialization
+    void Start () {
+       // int scene = AppModel.currentScene;
 	}
 	
 	// Update is called once per frame
