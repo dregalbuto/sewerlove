@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class PlayerController : MonoBehaviour
 {
@@ -95,7 +96,7 @@ public class PlayerController : MonoBehaviour
 
     void HandleInteractions(bool spaceBar)
     {
-        if (spaceBar)
+        if (spaceBar && SceneManager.GetActiveScene().name == "Town")
         {
             interacting = !interacting;
 
