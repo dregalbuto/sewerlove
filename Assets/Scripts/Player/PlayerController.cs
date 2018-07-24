@@ -9,6 +9,7 @@ public class PlayerController : MonoBehaviour
     [ReadOnly] public bool facingLeft = true;
     [ReadOnly] public bool isWalking = false;
     [ReadOnly] public bool isClimbing = false;
+    public bool allowMovement = true;
     private bool interacting = false;
     private Rigidbody2D body;
     private Animator animator;
@@ -20,6 +21,9 @@ public class PlayerController : MonoBehaviour
         body = GetComponent<Rigidbody2D>();
         animator = GetComponent<Animator>();
         npcController = GameObject.FindGameObjectWithTag("NPCParent");
+        if (SceneManager.GetActiveScene().name == "Town") {
+            FlipPlayer(1);
+        }
     }
 
     // Update is called once per physics tick
@@ -34,7 +38,7 @@ public class PlayerController : MonoBehaviour
 
     void TransformPlayer(float xInput, float yInput)
     {
-        if (!interacting)
+        if (!interacting && allowMovement == true)
         {
             if (IsMoving(xInput))
             {

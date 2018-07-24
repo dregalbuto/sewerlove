@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class InventoryController : MonoBehaviour {
 
-    [ReadOnly] public ICollection<InventoryItem> inventoryItems;
+    [ReadOnly] public ICollection<GameObject> inventoryItems;
 
 	// Use this for initialization
 	void Start () {
@@ -16,7 +16,7 @@ public class InventoryController : MonoBehaviour {
 		
 	}
 
-    public void AddItem(InventoryItem item) {
+    public void AddItem(GameObject item) {
         inventoryItems.Add(item);
     }
 }

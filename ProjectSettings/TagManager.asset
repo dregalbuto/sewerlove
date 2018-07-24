@@ -8,6 +8,9 @@ TagManager:
   - FG
   - NPCParent
   - DialogueUI
+  - Capsule
+  - Inventory
+  - Arrow
   layers:
   - Default
   - TransparentFX
