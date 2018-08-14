@@ -6,13 +6,12 @@ public class NPC : MonoBehaviour {
 
     protected bool triggered;
     protected bool engaged;
-    protected string dialogue;
+    protected List<string> dialogue = new List<string>();
 
 	// Use this for initialization
 	protected virtual void Start () {
         triggered = false;
         engaged = false;
-        dialogue = "";
 	}
 	
 	// Update is called once per frame
@@ -20,7 +19,7 @@ public class NPC : MonoBehaviour {
 		
 	}
 
-    public virtual string GetDialogue() {
+    public virtual List<string> GetDialogue() {
         return dialogue;
     }
 

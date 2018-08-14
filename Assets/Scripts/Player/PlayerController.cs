@@ -11,9 +11,12 @@ public class PlayerController : MonoBehaviour
     [ReadOnly] public bool isClimbing = false;
     public bool allowMovement = true;
     private bool interacting = false;
+    [ReadOnly] public bool fishing = false;
     private Rigidbody2D body;
     private Animator animator;
     private GameObject npcController;
+    private GameObject fishingParent;
+    private FishingMinigame fishingMinigame;
 
     // Use this for initialization
     void Start()
@@ -21,8 +24,14 @@ public class PlayerController : MonoBehaviour
         body = GetComponent<Rigidbody2D>();
         animator = GetComponent<Animator>();
         npcController = GameObject.FindGameObjectWithTag("NPCParent");
-        if (SceneManager.GetActiveScene().name == "Town") {
+        if (SceneManager.GetActiveScene().name == "Town") 
+        {
             FlipPlayer(1);
+        }
+        else if (SceneManager.GetActiveScene().name == "Fishing")
+        {
+            fishingParent = GameObject.FindWithTag("FishingParent");
+            fishingMinigame = fishingParent.GetComponentInChildren<FishingMinigame>();
         }
     }
 
@@ -34,13 +43,16 @@ public class PlayerController : MonoBehaviour
         bool spaceInput = Input.GetKeyDown("space");
         TransformPlayer(xInput, yInput);
         HandleInteractions(spaceInput);
+        if (SceneManager.GetActiveScene().name == "Fishing") {
+            HandleFishing();
+        }
     }
 
     void TransformPlayer(float xInput, float yInput)
     {
         if (!interacting && allowMovement == true)
         {
-            if (IsMoving(xInput))
+            if (IsMoving(xInput) && !fishing)
             {
                 isWalking = true;
                 FlipPlayer(xInput);
@@ -56,10 +68,12 @@ public class PlayerController : MonoBehaviour
                 MovePlayer(0, yInput);
             }
             isClimbing &= OnLadder();
+            isWalking &= !fishing;
 
             animator.SetBool("Walking", isWalking);
             animator.SetBool("Climbing", isClimbing);
         }
+
     }
 
     bool IsMoving(float x)
@@ -121,5 +135,10 @@ public class PlayerController : MonoBehaviour
 
             }
         }
+    }
+
+    void HandleFishing() 
+    {
+        fishing = !fishingMinigame.GetAllowMovement();
     }
 }

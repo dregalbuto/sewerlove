@@ -1,22 +1,36 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
-public class InventoryController : MonoBehaviour {
+public class InventoryController : MonoBehaviour
+{
+    private List<InventoryItem> inventoryItems;
+    private static bool created = false;
 
-    [ReadOnly] public ICollection<GameObject> inventoryItems;
+    private void Awake()
+    {
+        if (!created)
+        {
+            // this is the first instance - make it persist
+            DontDestroyOnLoad(this.gameObject);
+            created = true;
+            inventoryItems = new List<InventoryItem>();
+        }
+        else
+        {
+            // this must be a duplicate from a scene reload - DESTROY!
+            Destroy(this.gameObject);
+        }
+    }
 
-	// Use this for initialization
-	void Start () {
-		
-	}
-	
-	// Update is called once per frame
-	void Update () {
-		
-	}
 
-    public void AddItem(GameObject item) {
-        inventoryItems.Add(item);
+    public void AddItem(GameObject item)
+    {
+        inventoryItems.Add(new InventoryItem(item.name, item.GetComponent<Image>()));
+    }
+
+    public List<InventoryItem> GetInventoryItems()
+    {
+        return inventoryItems;
     }
 }

@@ -4,9 +4,8 @@ using UnityEngine;
 
 public class FishingMinigame : MonoBehaviour
 {
-    public bool fishing;
     public GameObject xObject, yObject, clawObject;
-    private GameObject maybeCapsule;
+    public FishingTrigger fishingTrigger;
     public int numItems = 5;
     public int zoneOneDepth = 3;
     public int yMax = 5;
@@ -15,28 +14,33 @@ public class FishingMinigame : MonoBehaviour
     public float clawRadius = 1f;
     public float capsuleScale = 1f;
     public bool debug = true;
-    public bool retracting;
 
-
-    private float xScale, yScale;
+    [ReadOnly] public bool allowMovement = true;
+    [ReadOnly] public bool startedFishing;
     [ReadOnly] public bool xSet, ySet;
     [ReadOnly] public bool doneRetracting;
     [ReadOnly] public bool gotCapsule;
+    [ReadOnly] public bool exit;
+    [ReadOnly] public bool restart;
+
+    private GameObject inventoryParent;
+    private GameObject maybeCapsule;
+    private float xScale, yScale;
     private float startTime;
     private float xStart;
     private int xMax = 14;
     private int debounce = 2;
 
-    // Use this for initialization
-    void Start()
+    private void Reset()
     {
-        GenerateItems();
-
         startTime = 0;
+        startedFishing = false;
         xSet = false;
         ySet = false;
         doneRetracting = false;
         gotCapsule = false;
+        exit = false;
+        restart = false;
         xScale = 1;
         yScale = 1;
         xStart = xObject.transform.position.x;
@@ -44,53 +48,81 @@ public class FishingMinigame : MonoBehaviour
         yObject.transform.localScale = new Vector3(0.1f, yScale, 1);
     }
 
+    // Use this for initialization
+    void Start()
+    {
+        GenerateItems();
+        Reset();
+
+    }
+
     // Update is called once per frame
     void Update()
     {
-        // TODO "press R to start fishing" or walk away to cancel
-        // (check player position/trigger on ground)
-
-        if (fishing)
+        // debounce so there is time between spacebar presses
+        if (debounce > 0)
         {
+            debounce -= 1;
+        }
 
-            if (!xSet && Input.GetKeyDown("space"))
-            {
-                xSet = true;
-                startTime = 0;
-            }
-            if (!ySet && Input.GetKeyDown("space") && debounce == 0)
-            {
-                ySet = true;
-                startTime = 0;
-            }
+        if (!fishingTrigger.triggered)
+        {
+            allowMovement = true;
+        }
 
-            // debounce so there is time between spacebar presses
-            if (xSet && debounce > 0)
+        if (fishingTrigger.triggered)
+        {
+            if (!exit)
             {
-                debounce -= 1;
+                allowMovement = false;
             }
-
-            // horizontal motion starts immediately
-            if (!xSet)
+            else
             {
-                CastHorizontal();
+                allowMovement = true;
             }
 
-            // vertical motion starts after horizontal is set
-            if (xSet && !ySet)
+            if (!startedFishing && Input.GetKeyDown("space") && fishingTrigger.triggered)
             {
-                CastVertical();
+                startedFishing = true;
+                debounce = 2;
+                restart = false;
             }
 
-            UpdateClaw();
-
-            if (retracting)
+            if (startedFishing)
             {
+
+                if (!xSet && Input.GetKeyDown("space") && debounce == 0)
+                {
+                    xSet = true;
+                    startTime = 0;
+                    debounce = 2;
+                }
+                if (!ySet && Input.GetKeyDown("space") && debounce == 0)
+                {
+                    ySet = true;
+                    startTime = 0;
+                }
+
+                // horizontal motion starts immediately
+                if (!xSet)
+                {
+                    CastHorizontal();
+                }
+
+                // vertical motion starts after horizontal is set
+                if (xSet && !ySet)
+                {
+                    CastVertical();
+                }
+
+                UpdateClaw();
+
                 // claw closes and rod retracts after vertical is set
                 // claw may or may not have an item in it
                 if (xSet && ySet && !doneRetracting)
                 {
-                    if (!gotCapsule) {
+                    if (!gotCapsule)
+                    {
                         maybeCapsule = GetItemOrNull();
                     }
                     if (xScale > 1)
@@ -100,29 +132,31 @@ public class FishingMinigame : MonoBehaviour
                     else
                     {
                         doneRetracting = true;
+                        if (maybeCapsule != null)
+                        {
+                            maybeCapsule.GetComponent<Renderer>().enabled = false;
+                            inventoryParent = GameObject.FindWithTag("InventoryParent");
+                            InventoryController ic = inventoryParent.GetComponent<InventoryController>();
+                            ic.AddItem(maybeCapsule);
+                        }
+
                     }
 
                 }
-                // check to see if we got anything
-                if (xSet && ySet && doneRetracting)
+                // do another round, or let the player leave
+                if (xSet && ySet && doneRetracting && Input.GetKeyDown("space"))
                 {
-                    if (maybeCapsule != null)
-                    {
-                        Debug.Log("Got item: " + maybeCapsule.name);
-                    }
-                    else
-                    {
-                        Debug.Log("Got nothing :(");
-                    }
+                    Reset();
+                    restart = true;
+                }
+                else if (xSet && ySet && doneRetracting && Input.GetKeyDown(KeyCode.Escape))
+                {
+                    exit = true;
                 }
 
-            }
+                // update the clock
+                startTime += Time.deltaTime;
 
-            startTime += Time.deltaTime;
-
-            if (debug)
-            {
-               // Debug.Log("xScale: " + xScale + " yScale: " + yScale);
             }
         }
     }
@@ -167,20 +201,6 @@ public class FishingMinigame : MonoBehaviour
             myCap.position = new Vector3(x, y, 1);
             myCap.localScale = new Vector3(capsuleScale, capsuleScale, 1);
         }
-
-        /*
-        if (debugCapsules)
-        {
-            foreach (float x in xs)
-            {
-                Debug.Log("x: " + x);
-            }
-            foreach (float y in ys)
-            {
-                Debug.Log("y: " + y);
-            }
-
-        */
     }
 
     GameObject GetItemOrNull()
@@ -190,8 +210,10 @@ public class FishingMinigame : MonoBehaviour
         if (c.Length > 0)
         {
             gotCapsule = true;
-            for (int i = 0; i < c.Length; i++) {
-                if (c[i].gameObject.tag == "Capsule") {
+            for (int i = 0; i < c.Length; i++)
+            {
+                if (c[i].gameObject.tag == "Capsule")
+                {
                     return c[i].gameObject;
                 }
             }
@@ -238,7 +260,8 @@ public class FishingMinigame : MonoBehaviour
 
     }
 
-    void CastHorizontal() {
+    void CastHorizontal()
+    {
         xScale = Mathf.PingPong(startTime * xMult, xMax);
         xObject.transform.localScale = new Vector3(xScale, 0.2f, 1);
         Vector3 yPos = new Vector3(-1 * xScale + xStart,
@@ -247,15 +270,81 @@ public class FishingMinigame : MonoBehaviour
         yObject.transform.position = yPos;
     }
 
-    void CastVertical() {
+    void CastVertical()
+    {
         yScale = Mathf.PingPong(startTime * yMult, yMax) + 1;
         yObject.transform.localScale = new Vector3(0.1f, yScale, 1);
     }
 
-    void UpdateClaw() {
+    void UpdateClaw()
+    {
         // move claw to correct position each frame
         Vector3 getY = yObject.transform.position;
         Vector3 clawPos = new Vector3(getY.x, getY.y - yScale - 0.5f, 1);
         clawObject.transform.position = clawPos;
     }
+
+    public bool GetIsFishing()
+    {
+        return startedFishing;
+    }
+
+    public List<string> GetPrompt()
+    {
+        return new List<string>
+        {
+            "Press SPACE to set your cast distance, " +
+            "then press SPACE again to reach for an item!",
+            "Press SPACE to start."
+        };
+    }
+
+    public List<string> GetFailure()
+    {
+        return new List<string>
+        {
+            "Aww beans... :( " ,
+            "Press SPACE to try again or press ESC to stop fishing."
+        };
+    }
+
+    public List<string> GetSuccess()
+    {
+        return new List<string>
+        {
+            "Sweet! I got a " + maybeCapsule.name + "!\n" ,
+            "Press SPACE to try again or press ESC to stop fishing."
+        };
+    }
+
+    public bool GetIsDoneFishing()
+    {
+        return doneRetracting;
+    }
+
+    public bool GetExit()
+    {
+        return exit;
+    }
+
+    public GameObject GetCapsule()
+    {
+        return maybeCapsule;
+    }
+
+    public bool GetStart()
+    {
+        return fishingTrigger.triggered;
+    }
+
+    public bool GetAllowMovement()
+    {
+        return allowMovement;
+    }
+
+    public bool GetRestart()
+    {
+        return restart;
+    }
+
 }

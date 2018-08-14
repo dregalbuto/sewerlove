@@ -1,18 +1,13 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine.UI;
 
-public class InventoryItem : MonoBehaviour {
+public class InventoryItem {
 
-    // item properties?
+    public string name;
+    public Image image;
 
-	// Use this for initialization
-	void Start () {
-		// render...
-	}
-	
-	// Update is called once per frame
-	void Update () {
-		// render...
-	}
+    public InventoryItem(string name, Image image)
+    {
+        this.name = name;
+        this.image = image;
+    }
 }

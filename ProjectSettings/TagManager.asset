@@ -11,6 +11,10 @@ TagManager:
   - Capsule
   - Inventory
   - Arrow
+  - FishingParent
+  - FishingTrigger
+  - InventoryParent
+  - InventoryUI
   layers:
   - Default
   - TransparentFX
